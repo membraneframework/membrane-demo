@@ -21,8 +21,7 @@ interface RoomCallbacks {
   onConnectionError?: (message: string) => void;
   onAddTrack?: (
     track: MediaStreamTrack,
-    stream: MediaStream,
-    mute: boolean
+    stream: MediaStream
   ) => void;
   onRemoveTrack?: (track: MediaStreamTrack, stream: MediaStream) => void;
 }
@@ -32,7 +31,7 @@ export class MembraneWebRTC {
   private _channel?: Channel;
   private channelId: string;
 
-  private localStream: MediaStream;
+  private localTracks: Set<MediaStreamTrack> = new Set<MediaStreamTrack>();
   private remoteStreams: Set<MediaStream> = new Set<MediaStream>();
   private connection?: RTCPeerConnection;
 
@@ -49,16 +48,10 @@ export class MembraneWebRTC {
     this._channel = ch;
   }
 
-  constructor(
-    socket: Socket,
-    localStream: MediaStream,
-    channelId: string,
-    callbacks?: RoomCallbacks
-  ) {
+  constructor(socket: Socket, channelId: string, callbacks?: RoomCallbacks) {
     this.socket = socket;
     this.callbacks = callbacks;
     this.channelId = channelId;
-    this.localStream = localStream;
 
     const handleError = () => {
       this.callbacks?.onConnectionError?.(DEFAULT_ERROR_MESSAGE);
@@ -69,9 +62,15 @@ export class MembraneWebRTC {
     socket.onClose(handleError);
   }
 
-  public start = () => {
-    this.channel = this.socket.channel(`room:${this.channelId}`, {});
+  public addTrack = (track: MediaStreamTrack, stream: MediaStream) => {
+    if(this.connection) {
+      throw new Error("Adding tracks when connection is established is not yet supported");
+    }
+    this.localTracks.add(track);
+  }
 
+  public start = () => {
+    this.channel = this.socket.channel(this.channelId, {});
     this.channel.on("offer", this.onOffer);
     this.channel.on("candidate", this.onRemoteCandidate);
     this.channel.on("error", (data: any) => {
@@ -105,10 +104,7 @@ export class MembraneWebRTC {
       this.connection = new RTCPeerConnection(RTC_CONFIG);
       this.connection.onicecandidate = this.onLocalCandidate();
       this.connection.ontrack = this.onTrack();
-
-      this.localStream
-        ?.getTracks()
-        .forEach((track) => this.connection?.addTrack(track));
+      this.localTracks.forEach(track => this.connection?.addTrack(track));
     } else {
       this.connection.createOffer({ iceRestart: true });
     }
@@ -161,7 +157,7 @@ export class MembraneWebRTC {
       if (!this.remoteStreams.has(stream)) {
         this.remoteStreams.add(stream);
       }
-      this.callbacks?.onAddTrack?.(event.track, stream, false);
+      this.callbacks?.onAddTrack?.(event.track, stream);
     };
   };
 }

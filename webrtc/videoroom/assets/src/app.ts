@@ -23,15 +23,20 @@ const setup = async () => {
         CONSTRAINTS
       );
 
-      localStream
-        .getTracks()
-        .forEach((track) => addVideoElement(track, localStream, true));
-
-      new MembraneWebRTC(socket, localStream, roomId, {
+      const webrtc = new MembraneWebRTC(socket, `room:${roomId}`, {
         onAddTrack: addVideoElement,
         onRemoveTrack: removeVideoElement,
         onConnectionError: setErrorMessage,
-      }).start();
+      });
+
+      localStream
+        .getTracks()
+        .forEach(track => {
+          webrtc.addTrack(track, localStream);
+          addVideoElement(track, localStream, true);
+        });
+
+      webrtc.start();
     } catch (error) {
       console.error(error);
       setErrorMessage(
