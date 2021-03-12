@@ -4,6 +4,7 @@ export function addVideoElement(
   mute: boolean = false
 ) {
   let video = <HTMLVideoElement>document.getElementById(stream.id);
+  console.log(stream.id)
 
   if (!video) {
     video = document.createElement("video");

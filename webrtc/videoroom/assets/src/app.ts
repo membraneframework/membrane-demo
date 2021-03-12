@@ -29,14 +29,22 @@ const setup = async () => {
         onConnectionError: setErrorMessage,
       });
 
+      const webrtc2 = new MembraneWebRTC(socket, `room:${roomId}__2`, {
+        onAddTrack: addVideoElement,
+        onRemoveTrack: removeVideoElement,
+        onConnectionError: setErrorMessage,
+      });
+
       localStream
         .getTracks()
         .forEach(track => {
           webrtc.addTrack(track, localStream);
+          webrtc2.addTrack(track, localStream);
           addVideoElement(track, localStream, true);
         });
 
       webrtc.start();
+      webrtc2.start();
     } catch (error) {
       console.error(error);
       setErrorMessage(
