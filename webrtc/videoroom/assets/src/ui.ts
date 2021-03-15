@@ -13,6 +13,7 @@ export function addVideoElement(
   video.srcObject = stream;
   video.autoplay = true;
   video.playsInline = true;
+  video.controls = true;
   video.muted = mute;
 }
 

@@ -1,9 +1,9 @@
 import { Channel, Socket } from "phoenix";
 
 const RTC_CONFIG: RTCConfiguration = {
-  // iceServers: [
-  //     YOUR TURN AND STUN SERVERS
-  // ]
+  iceServers: [
+      {urls: "stun:74.125.200.127:19302"}
+  ]
 };
 
 const DEFAULT_ERROR_MESSAGE =
@@ -26,14 +26,18 @@ interface RoomCallbacks {
   onRemoveTrack?: (track: MediaStreamTrack, stream: MediaStream) => void;
 }
 
+interface OldPC extends RTCPeerConnection {
+  addStream: (stream: MediaStream) => void
+}
+
 export class MembraneWebRTC {
   private readonly socket: Socket;
   private _channel?: Channel;
   private channelId: string;
 
-  private localTracks: Set<MediaStreamTrack> = new Set<MediaStreamTrack>();
+  private localTracks = new Set<{track: MediaStreamTrack, stream: MediaStream}>();
   private remoteStreams: Set<MediaStream> = new Set<MediaStream>();
-  private connection?: RTCPeerConnection;
+  private connection?: OldPC;
 
   private callbacks?: RoomCallbacks;
 
@@ -66,8 +70,10 @@ export class MembraneWebRTC {
     if(this.connection) {
       throw new Error("Adding tracks when connection is established is not yet supported");
     }
-    this.localTracks.add(track);
+    this.localTracks.add({track: track, stream: stream});
   }
+
+  public getLocalTracks = ():Set<{track: MediaStreamTrack, stream: MediaStream}>  => this.localTracks;
 
   public start = () => {
     this.channel = this.socket.channel(this.channelId, {});
@@ -101,10 +107,10 @@ export class MembraneWebRTC {
 
   private onOffer = async (offer: OfferData) => {
     if (!this.connection) {
-      this.connection = new RTCPeerConnection(RTC_CONFIG);
+      this.connection = <OldPC>(new RTCPeerConnection(RTC_CONFIG));
       this.connection.onicecandidate = this.onLocalCandidate();
       this.connection.ontrack = this.onTrack();
-      this.localTracks.forEach(track => this.connection?.addTrack(track));
+      this.localTracks.forEach(entry => this.connection?.addTrack(entry.track, entry.stream));
     } else {
       this.connection.createOffer({ iceRestart: true });
     }

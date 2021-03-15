@@ -23,8 +23,11 @@ defmodule VideoRoom.MixProject do
       # {:membrane_core, "~> 0.6.1"},
       {:membrane_core,
        github: "membraneframework/membrane_core", branch: "develop", override: true},
-      {:membrane_webrtc_plugin,
-       github: "membraneframework/membrane_webrtc_plugin", branch: "endpoint"},
+      {
+        :membrane_webrtc_plugin,
+        #  github: "membraneframework/membrane_webrtc_plugin", branch: "endpoint"},
+        path: "../../../membrane_webrtc_plugin"
+      },
       {:membrane_element_tee, "~> 0.4.1"},
       {:membrane_element_fake, "~> 0.4.0"},
       {:plug_cowboy, "~> 2.0"},
@@ -32,7 +35,10 @@ defmodule VideoRoom.MixProject do
       {:phoenix_html, "~> 2.14"},
       {:phoenix_live_reload, "~> 1.2"},
       {:poison, "~> 3.1"},
-      {:jason, "~> 1.2"}
+      {:jason, "~> 1.2"},
+      {:membrane_file_plugin, "> 0.0.0"},
+      {:membrane_realtimer_plugin, path: "../../../membrane_realtimer_plugin"},
+      {:wallaby, "> 0.0.0"}
     ]
   end
 end
