@@ -13,7 +13,7 @@ const phoenix_channel_push_result = async (push: Push): Promise<any> => {
 
 interface Participant {
   displayName: string;
-  mids: string[];
+  ids: string[];
 }
 
 interface OfferData {
@@ -63,7 +63,7 @@ export class MembraneWebRTC {
   private localStream?: MediaStream;
   private screensharingStream?: MediaStream;
   private remoteStreams: Set<MediaStream> = new Set<MediaStream>();
-  private midToStream: Map<String, MediaStream> = new Map();
+  private trackIdToStream: Map<String, MediaStream> = new Map();
   private connection?: RTCPeerConnection;
   private participants: Participant[] = [];
   private readonly rtcConfig: RTCConfiguration = {
@@ -129,10 +129,10 @@ export class MembraneWebRTC {
     this.channel.on("replaceTrack", (data: any) => {
       const oldTrackId = data.data.oldTrackId;
       const newTrackId = data.data.newTrackId;
-      const newStream = this.midToStream.get(newTrackId)!;
-      const oldStream = this.midToStream.get(oldTrackId)!;
-      const participant = this.participants.find(({ mids }) =>
-        mids.includes(newTrackId)
+      const newStream = this.trackIdToStream.get(newTrackId)!;
+      const oldStream = this.trackIdToStream.get(oldTrackId)!;
+      const participant = this.participants.find(({ ids }) =>
+        ids.includes(newTrackId)
       );
 
       this.callbacks.onReplaceStream?.(
@@ -143,9 +143,9 @@ export class MembraneWebRTC {
     });
     this.channel.on("displayTrack", (data: any) => {
       const trackId = data.data.trackId;
-      const stream = this.midToStream.get(trackId)!;
-      const participant = this.participants.find(({ mids }) =>
-        mids.includes(trackId)
+      const stream = this.trackIdToStream.get(trackId)!;
+      const participant = this.participants.find(({ ids }) =>
+        ids.includes(trackId)
       );
 
       this.callbacks.onDisplayStream?.(stream, participant?.displayName ?? "");
@@ -226,16 +226,15 @@ export class MembraneWebRTC {
   private onTrack = () => {
     return (event: RTCTrackEvent) => {
       const [stream] = event.streams;
-      const mid = event.transceiver.mid!;
-      const isScreenSharing = mid.includes("SCREEN") || false;
+      const id = event.track.id;
+      const isScreenSharing = id.includes("SCREEN") || false;
 
       if (isScreenSharing) {
         this.screensharingStream = stream;
       } else {
         this.remoteStreams.add(stream);
       }
-      this.midToStream.set(mid, stream);
-
+      this.trackIdToStream.set(id, stream);
       stream.onremovetrack = (event) => {
         const hasTracks = stream.getTracks().length > 0;
 
@@ -245,7 +244,7 @@ export class MembraneWebRTC {
           } else {
             this.remoteStreams.delete(stream);
           }
-          this.midToStream.delete(mid);
+          this.trackIdToStream.delete(id);
           stream.onremovetrack = null;
         }
 
@@ -259,15 +258,14 @@ export class MembraneWebRTC {
       this.callbacks.onAddTrack?.({
         track: event.track,
         label:
-          this.participants.find((p) => p.mids.includes(mid))?.displayName ||
-          "",
+          this.participants.find((p) => p.ids.includes(id))?.displayName || "",
         stream: stream,
         isScreenSharing,
       });
 
       if (this.remoteStreams.size <= this.maxDisplayNum && !isScreenSharing) {
-        const participant = this.participants.find(({ mids }) =>
-          mids.includes(mid)
+        const participant = this.participants.find(({ ids }) =>
+          ids.includes(id)
         );
         // screensharing is displayed by default
         this.callbacks.onDisplayStream?.(

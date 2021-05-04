@@ -113,30 +113,19 @@ defmodule VideoRoom.Pipeline do
           # participants labelling
           log_metadata: [peer: peer_label(display_name, peer_pid)]
         }
+        |> Map.put(:peer_type, peer_type)
       }
 
-      links = new_peer_links(peer_type, endpoint_bin, ctx, state)
-
-      tracks_msgs =
-        flat_map_children(ctx, fn
-          {:endpoint, other_peer_pid} = endpoint_bin
-          when other_peer_pid != state.active_screensharing ->
-            [forward: {endpoint_bin, {:add_tracks, tracks}}]
-
-          _child ->
-            []
-        end)
-
-      spec = %ParentSpec{children: children, links: links}
+      spec = %ParentSpec{children: children}
 
       state = %{
-        state
+        stateie
         | active_screensharing:
             if(peer_type == :screensharing, do: peer_pid, else: state.active_screensharing)
       }
 
       state = put_in(state.endpoints[peer_pid], endpoint)
-      {{:ok, [spec: spec] ++ tracks_msgs}, state}
+      {{:ok, [spec: spec]}, state}
     end
   end
 
@@ -167,6 +156,49 @@ defmodule VideoRoom.Pipeline do
   def handle_other(:check_if_empty, _ctx, state) do
     stop_if_empty(state)
     {:ok, state}
+  end
+
+  @impl true
+  def handle_notification({:new_tracks_ids, mid_to_msid}, {:endpoint, endpoint_id}, ctx, state) do
+    state =
+      state
+      |> update_in([:endpoints, endpoint_id], &Endpoint.update_tracks_ids(&1, mid_to_msid))
+
+    endpoints =
+      state.display_engine.endpoints
+      |> Map.update!(endpoint_id, &Endpoint.update_tracks_ids(&1, mid_to_msid))
+
+    state = %{state | display_engine: %DisplayEngine{state.display_engine | endpoints: endpoints}}
+
+    mid_to_msid =
+      Map.get(state, :mid_to_msid, %{})
+      |> Map.merge(mid_to_msid)
+
+    state =
+      state
+      |> Map.put(:mid_to_msid, mid_to_msid)
+
+    child_endpoint_bin = ctx.children[{:endpoint, endpoint_id}][:options]
+
+    inbound_tracks =
+      child_endpoint_bin.inbound_tracks
+      |> Enum.map(&Map.put(&1, :id, mid_to_msid[&1.mid]))
+
+    links = new_peer_links(child_endpoint_bin.peer_type, {:endpoint, endpoint_id}, ctx, state)
+
+    tracks_msgs =
+      flat_map_children(ctx, fn
+        {:endpoint, other_peer_pid} = endpoint_bin
+        when other_peer_pid != state.active_screensharing and other_peer_pid != endpoint_id ->
+          [forward: {endpoint_bin, {:add_tracks, inbound_tracks}}]
+
+        _child ->
+          []
+      end)
+
+    spec = %ParentSpec{links: links}
+
+    {{:ok, [spec: spec] ++ tracks_msgs}, state}
   end
 
   @impl true
@@ -233,7 +265,7 @@ defmodule VideoRoom.Pipeline do
     participants =
       state.endpoints
       |> Enum.map(fn {_, %Endpoint{inbound_tracks: tracks, ctx: ctx}} ->
-        %{display_name: ctx.display_name, mids: Map.keys(tracks)}
+        %{display_name: ctx.display_name, ids: Map.keys(tracks)}
       end)
 
     send(peer_pid, {:signal, message, participants})
@@ -313,7 +345,7 @@ defmodule VideoRoom.Pipeline do
 
   defp new_peer_links(:participant, {:endpoint, new_endpoint_id} = new_endpoint_bin, ctx, state) do
     flat_map_children(ctx, fn
-      {:tee, {endpoint_id, track_id}} = tee ->
+      {:tee, {endpoint_id, track_id}} = tee when endpoint_id != new_endpoint_id ->
         endpoint = state.endpoints[endpoint_id]
         track = Endpoint.get_track_by_id(endpoint, track_id)
         track_enabled = enable_track?(track, endpoint, new_endpoint_id, state.display_engine)
