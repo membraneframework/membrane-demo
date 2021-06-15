@@ -1,0 +1,80 @@
+body {
+  margin: 40px auto;
+  max-width: 900px;
+  line-height: 1.6;
+  font-size: 18px;
+  color: rgb(211, 211, 211);
+  font-family: arial;
+  background-color: black;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+}
+
+.Index {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.VideoChat {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  video {
+    max-width: 100%;
+    border-radius: 5px;
+  }
+}
+
+.PlayerLink {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+
+  a {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  span {
+    text-align: center;
+  }
+}
+
+.Player {
+  width: 80%;
+
+  video {
+    outline: none;
+  }
+}
+
+.Room {
+  padding: 20px;
+
+  a {
+    text-decoration: none;
+    cursor: pointer;
+
+    &,
+    &:visited,
+    &:active {
+      color: inherit;
+    }
+
+    &:hover {
+      color: #404040;
+    }
+  }
+}
+
+.Control {
+  text-align: center;
+  margin: 20px;
+}

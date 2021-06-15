@@ -1,0 +1,15 @@
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<video id="player" controls autoplay class="Player"></video>
+<script>
+  var video = document.getElementById('player');
+
+  var videoSrc = window.location.origin + `/video/${'<%= @prefix %>'}/index.m3u8`;
+  if (Hls.isSupported()) {
+    var hls = new Hls();
+    hls.loadSource(videoSrc);
+    hls.attachMedia(video);
+  }
+  else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = videoSrc;
+  }
+</script>
