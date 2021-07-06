@@ -7,7 +7,7 @@ defmodule WebRTCToHLS.Application do
     children = [
       WebRTCToHLSWeb.Endpoint,
       {Phoenix.PubSub, name: WebRTCToHLS.PubSub},
-      {Registry, keys: :unique, name: WebRTCToHLS.Pipeline.registry()},
+      {Registry, keys: :duplicate, name: WebRTCToHLS.Registry},
       WebRTCToHLS.StorageCleanup
     ]
 

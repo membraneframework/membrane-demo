@@ -1,9 +1,9 @@
 <div class="Index">
-    <div id="room" class="Room">
-        <h2>Membrane WebRTC to HLS demo</h2>
-        <div id="videochat" class="VideoChat"> </div>
-        <div id="control" class="Control"></div>
-        <div id="player-link" class="PlayerLink"></div>
-        <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
+    <h2>Membrane WebRTC to HLS demo</h2>
+    <div id="preview" class="Preview"> </div>
+    <div id="control" class="Control"></div>
+    <div id="player-info" class="PlayerInfo">
+        <span>Waiting for HLS playlist to become playable...</span>
     </div>
+    <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
 </div>

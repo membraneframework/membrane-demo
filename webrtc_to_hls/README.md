@@ -5,7 +5,7 @@
 ### Mac OS X
 
 ```
-brew install srtp libnice clang-format ffmpeg opus
+brew install srtp libnice clang-format ffmpeg opus fdk-aac
 ```
 
 ## Usage

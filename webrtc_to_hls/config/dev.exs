@@ -2,10 +2,8 @@ import Config
 
 config :membrane_webrtc_to_hls_demo, WebRTCToHLSWeb.Endpoint,
   url: [host: "localhost"],
-  https: [
-    port: 8443,
-    keyfile: "priv/certs/key.pem",
-    certfile: "priv/certs/certificate.pem"
+  http: [
+    port: 4000
   ],
   watchers: [
     node: [
@@ -25,5 +23,3 @@ config :membrane_webrtc_to_hls_demo, WebRTCToHLSWeb.Endpoint,
       "lib/videoroom_web/templates"
     ]
   ]
-
-config :logger, level: :debug

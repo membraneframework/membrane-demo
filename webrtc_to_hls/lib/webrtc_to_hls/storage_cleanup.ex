@@ -1,7 +1,7 @@
 defmodule WebRTCToHLS.StorageCleanup do
   use GenServer
 
-  alias WebRTCToHLS.{Pipeline, Utils}
+  alias WebRTCToHLS.Helpers
 
   @interval 5_000
 
@@ -28,19 +28,19 @@ defmodule WebRTCToHLS.StorageCleanup do
     all_paths = list_storage_directories() |> MapSet.new()
 
     MapSet.difference(all_paths, active_paths)
-    |> Enum.map(&Utils.hls_output_path(&1))
+    |> Enum.map(&Helpers.hls_output_path(&1))
     |> Enum.each(&File.rm_rf!(&1))
   end
 
   defp list_running_pipelines_storage_paths() do
-    Registry.select(Pipeline.registry(), [{{:_, :"$2", :_}, [], [:"$2"]}])
+    Registry.select(WebRTCToHLS.Registry, [{{:_, :"$2", :_}, [], [:"$2"]}])
     |> Enum.map(fn pid ->
-      pid |> Utils.pid_hash()
+      pid |> Helpers.pid_hash()
     end)
   end
 
   defp list_storage_directories() do
-    case Utils.hls_output_mount_path() |> File.ls() do
+    case Helpers.hls_output_mount_path() |> File.ls() do
       {:ok, dirs} -> dirs
       {:error, :enoent} -> []
     end

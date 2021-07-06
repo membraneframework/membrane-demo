@@ -18,10 +18,25 @@ h3 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 20px;
+  padding: 60px 40px 40px 40px;
+
+  a {
+    text-decoration: none;
+    cursor: pointer;
+
+    &,
+    &:visited,
+    &:active {
+      color: inherit;
+    }
+
+    &:hover {
+      color: #404040;
+    }
+  }
 }
 
-.VideoChat {
+.Preview {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -32,7 +47,7 @@ h3 {
   }
 }
 
-.PlayerLink {
+.PlayerInfo {
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -52,25 +67,6 @@ h3 {
 
   video {
     outline: none;
-  }
-}
-
-.Room {
-  padding: 20px;
-
-  a {
-    text-decoration: none;
-    cursor: pointer;
-
-    &,
-    &:visited,
-    &:active {
-      color: inherit;
-    }
-
-    &:hover {
-      color: #404040;
-    }
   }
 }
 

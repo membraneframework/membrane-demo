@@ -3,77 +3,49 @@ defmodule WebRTCToHLSWeb.StreamChannel do
 
   require Logger
 
+  alias WebRTCToHLS.Stream
+
   @impl true
-  def join("stream", _message, socket) do
-    case WebRTCToHLS.Pipeline.start(self()) do
-      {:ok, pipeline} ->
-        Process.monitor(pipeline)
-        {:ok, assign(socket, %{pipeline: pipeline})}
+  def join("stream", _params, socket) do
+    case Stream.start(self()) do
+      {:ok, stream} ->
+        peer_id = UUID.uuid4()
+        Process.monitor(stream)
+        {:ok, assign(socket, %{stream: stream, peer_id: peer_id})}
 
       {:error, reason} ->
         Logger.error("""
-        Failed to start pipeline
-        Stream owner: #{inspect(self())}
+        Failed to start stream.
         Reason: #{inspect(reason)}
         """)
 
-        {:error, %{reason: "failed to start pipeline"}}
+        {:error, %{reason: "failed to start room"}}
     end
   end
 
   @impl true
-  def handle_in("start", _msg, socket) do
-    socket
-    |> send_to_pipeline(:start)
-
-    {:noreply, socket}
-  end
-
-  def handle_in("answer", %{"data" => %{"sdp" => sdp}}, socket) do
-    socket
-    |> send_to_pipeline({:signal, {:sdp_answer, sdp}})
-
-    {:noreply, socket}
-  end
-
-  def handle_in("candidate", %{"data" => %{"candidate" => candidate}}, socket) do
-    socket
-    |> send_to_pipeline({:signal, {:candidate, candidate}})
-
-    {:noreply, socket}
-  end
-
-  def handle_in("stop", _msg, socket) do
-    socket |> send_to_pipeline(:stop)
+  def handle_in("mediaEvent", %{"data" => event}, socket) do
+    send(socket.assigns.stream, {:media_event, socket.assigns.peer_id, event})
 
     {:noreply, socket}
   end
 
   @impl true
-  def handle_info({:signal, {:candidate, candidate, sdp_mline_index}}, socket) do
-    push(socket, "candidate", %{
-      data: %{"candidate" => candidate, "sdpMLineIndex" => sdp_mline_index}
-    })
+  def handle_info({:media_event, event}, socket) do
+    push(socket, "mediaEvent", %{data: event})
 
     {:noreply, socket}
   end
 
-  def handle_info({:signal, {:sdp_offer, sdp}}, socket) do
-    push(socket, "offer", %{data: %{"type" => "offer", "sdp" => sdp}})
+  @impl true
+  def handle_info({:playlist_playable, playlist_id}, socket) do
+    push(socket, "playlistPlayable", %{playlistId: playlist_id})
+
     {:noreply, socket}
   end
 
-  def handle_info({:DOWN, _ref, :process, _monitor, _reason}, socket) do
-    push(socket, "error", %{error: "Room stopped working, consider restarting your connection"})
-    {:noreply, socket}
-  end
-
-  def handle_info({:hls_path, path}, socket) do
-    push(socket, "hls_path", %{path: path})
-    {:noreply, socket}
-  end
-
-  defp send_to_pipeline(socket, message) do
-    socket.assigns.pipeline |> send(message)
+  @impl true
+  def handle_info({:DOWN, _ref, :process, stream, reason}, %{stream: stream} = state) do
+    {:stop, reason, state}
   end
 end

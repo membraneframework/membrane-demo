@@ -1,4 +1,4 @@
-defmodule WebRTCToHLS.Utils do
+defmodule WebRTCToHLS.Helpers do
   @moduledoc false
 
   @spec pid_hash(pid()) :: String.t()
