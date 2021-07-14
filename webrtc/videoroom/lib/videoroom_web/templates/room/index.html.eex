@@ -3,24 +3,14 @@
         <h2>Membrane WebRTC video room demo</h2>
     </a>
     <h3 class="roomName">Room: <%= @room_id %></h3>
-    <div id="participants-names-list"></div>
+    <div id="participants-list"></div>
     <div id="videochat-error" class="VideoChatError" style="display: none;"> </div>
     <div id="videochat" class="VideoChat">
-        <div id="screensharing" class="Screensharing" style="display: none;">
-            <video id="screensharing-video"></video>
-            <div class="VideoLabel">Placeholder</div>
-        </div>
         <template id="video-feed-template">
             <div class="VideoFeed">
-                <div class="VideoPlaceholder">
-                    <%= PhoenixInlineSvg.Helpers.svg_image(@conn, "video-off") %>
-                </div>
                 <audio></audio>
                 <video></video>
                 <div class="VideoLabel">Placeholder</div>
-                <div class="MutedAudioIcon">
-                    <%= PhoenixInlineSvg.Helpers.svg_image(@conn, "mic-off") %>
-                </div>
             </div>
         </template>
         <div class="VideoGridContainer">
@@ -29,21 +19,4 @@
     </div>
 
     <script src="<%= static_path(@conn, "/js/room.js") %>"></script>
-</div>
-<div id="media-controls", class="MediaControls">
-    <div id="video-on" class="ControlIcon" style="display: none;">
-        <%= PhoenixInlineSvg.Helpers.svg_image(@conn, "video-on") %>
-    </div>
-    <div id="video-off" class="ControlIcon" style="display: none;">
-        <%= PhoenixInlineSvg.Helpers.svg_image(@conn, "video-off") %>
-    </div>
-    <div id="mic-on" class="ControlIcon" style="display: none;">
-        <%= PhoenixInlineSvg.Helpers.svg_image(@conn, "mic-on") %>
-    </div>
-    <div id="mic-off" class="ControlIcon" style="display: none;">
-        <%= PhoenixInlineSvg.Helpers.svg_image(@conn, "mic-off") %>
-    </div>
-    <div class="StartScreensharing">
-        <button style="display: none;" id="toggle-screensharing"></button>
-    </div>
 </div>

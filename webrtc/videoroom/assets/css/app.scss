@@ -22,8 +22,6 @@ h3 {
   line-height: 1.2;
 }
 
-$max-screensharing-height: "100vh - 90px - 80px - 20px";
-
 @mixin dark-button {
   position: relative;
   display: block;
@@ -40,7 +38,6 @@ $max-screensharing-height: "100vh - 90px - 80px - 20px";
 }
 
 $space: 10px;
-$media-controls-height: 80px;
 
 .Index {
   display: flex;
@@ -79,7 +76,7 @@ $media-controls-height: 80px;
     align-items: center;
     width: 100%;
     video {
-      max-height: calc(100vh - #{$media-controls-height} - 150px);
+      max-height: calc(100vh - 150px);
       max-width: calc(100vw - 100px);
       width: auto;
     }
@@ -120,69 +117,11 @@ $media-controls-height: 80px;
   background: linear-gradient(to bottom left, transparent 0%, black 150%);
 }
 
-.VideoPlaceholder {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-color: black;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  z-index: 100;
-}
-
-.MutedAudioIcon {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  padding: 0 $space;
-  z-index: 100;
-}
-
-.VideoChat-screensharing {
-  display: grid;
-  grid-template-columns: 4fr 2fr;
-  align-items: flex-start;
-
-  .grid-1 {
-    .VideoFeed {
-      width: 100%;
-      video {
-        width: inherit;
-      }
-    }
-  }
-
-  .grid-1,
-  .grid-2 {
-    width: 100%;
-    grid-template-columns: 1fr;
-    max-height: calc(#{$max-screensharing-height});
-    grid-auto-rows: minmax(min-content, max-content);
-  }
-
-  .VideoGridContainer {
-    height: 100%;
-  }
-
-  @media only screen and (min-width: 1600px) {
-    grid-template-columns: 3fr 2fr;
-    .grid-2 {
-      grid-template-columns: 1fr 1fr;
-    }
-    .VideoGridContainer {
-      height: inherit;
-    }
-  }
-}
-
 .Room {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - #{$media-controls-height});
+  height: 100vh;
   box-sizing: border-box;
   padding: 2 * $space;
 
@@ -244,27 +183,6 @@ $media-controls-height: 80px;
   padding: $space;
 }
 
-.MediaControls {
-  position: fixed;
-  box-sizing: border-box;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: $media-controls-height;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2 * $space 3 * $space;
-  background-color: black;
-}
-
-.DisabledControlIcon {
-  svg {
-    stroke: #a2071d;
-  }
-  pointer-events: none;
-}
-
 .ControlIcon {
   cursor: pointer;
   margin-right: 3 * $space;
@@ -277,31 +195,6 @@ $media-controls-height: 80px;
   &:hover {
     svg {
       stroke: gray;
-    }
-  }
-}
-
-.Screensharing {
-  display: flex;
-  position: relative;
-  justify-content: center;
-  align-items: center;
-  margin-right: $space;
-  flex: 5;
-  .VideoFeed {
-    border-radius: 5px;
-    border: none;
-    max-height: calc(#{$max-screensharing-height});
-  }
-}
-
-.StartScreensharing {
-  button {
-    @include dark-button;
-    padding: 0.5 * $space;
-    width: inherit;
-    &:hover {
-      background-color: #292929;
     }
   }
 }

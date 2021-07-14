@@ -16,6 +16,5 @@
       <main role="main">
         <%= @inner_content %>
       </main>
-    </div>
   </body>
 </html>

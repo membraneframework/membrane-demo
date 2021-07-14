@@ -20,11 +20,7 @@ defmodule VideoRoom.MixProject do
 
   defp deps do
     [
-      # {:membrane_core, "~> 0.6.1"},
-      {:membrane_core, github: "membraneframework/membrane_core", override: true},
-      {:membrane_webrtc_plugin, github: "membraneframework/membrane_webrtc_plugin"},
-      {:membrane_element_tee, "~> 0.4.1"},
-      {:membrane_element_fake, "~> 0.4.0"},
+      {:membrane_sfu, github: "membraneframework/membrane_sfu", branch: :develop},
       {:plug_cowboy, "~> 2.0"},
       {:phoenix, "~> 1.5"},
       {:phoenix_html, "~> 2.14"},
